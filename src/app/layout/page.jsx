@@ -19,12 +19,12 @@ export default function Page({ children }) {
   };
   return (
     <SidebarProvider>
-      <div className="hidden md:block">
+      <div className="hidden md:block print:hidden">
         <AppSidebar />
       </div>
 
       <SidebarInset>
-        <header className="sticky  top-0 z-10 flex h-16 shrink-0 items-center justify-between gap-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between gap-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 print:hidden">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1 hover:bg-primary/30" />
             <Separator
@@ -41,7 +41,7 @@ export default function Page({ children }) {
             {children}
           </div>
         </main>
-        <footer className="hidden sm:block sticky bottom-0 z-10  h-8 shrink-0 items-center gap-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 ">
+        <footer className="hidden sm:block sticky bottom-0 z-10  h-8 shrink-0 items-center gap-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 print:hidden">
           <div className="flex items-center justify-between gap-2 p-2 text-xs rounded-md border-t-2 border-primary">
             <span>© 2025-26 All Rights Reserved</span>
             <span>Crafted with ❤️ by AG Solutions</span>

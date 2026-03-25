@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, useSearchParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import PageHeader from "@/components/common/page-header";
 import XLSX from "xlsx-js-style";
 import moment from "moment";
@@ -7,15 +7,28 @@ import { Button } from "@/components/ui/button";
 import { REPORT_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { FileSpreadsheet, Printer, ArrowLeft, Boxes } from "lucide-react";
+import { useSelector } from "react-redux";
+import { getImageBaseUrl } from "@/utils/imageUtils";
 
 const PetrolReimbursementDetail = () => {
+  const companyDetails = useSelector((state) => state.company.companyDetails);
+  const companyImage = useSelector((state) => state.company.companyImage);
+
+  const logoBaseUrl = getImageBaseUrl(companyImage, "Company");
+  const logoUrl =
+    logoBaseUrl && companyDetails?.company_logo
+      ? `${logoBaseUrl}${companyDetails.company_logo}`
+      : null;
+
   const { id } = useParams();
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const [reportData, setReportData] = useState(null);
 
-  const from_date = searchParams.get("from_date");
-  const to_date = searchParams.get("to_date");
+  // Get dates from state fallback to search params if needed (for back compatibility or refresh if persisted)
+  const from_date = location.state?.from_date;
+  const to_date = location.state?.to_date;
+  const employee_id = location.state?.employee_id;
 
   const { trigger: fetchReport, loading: isLoading } = useApiMutation();
 
@@ -24,7 +37,7 @@ const PetrolReimbursementDetail = () => {
       const formData = new FormData();
       formData.append("from_date", from_date);
       formData.append("to_date", to_date);
-      formData.append("employee_id", id);
+      formData.append("employee_id", employee_id);
 
       const res = await fetchReport({
         url: REPORT_API.trip,
@@ -38,14 +51,54 @@ const PetrolReimbursementDetail = () => {
   };
 
   useEffect(() => {
-    if (id && from_date && to_date) {
+    if (employee_id && from_date && to_date) {
       getReport();
     }
-  }, [id, from_date, to_date]);
+  }, [employee_id, from_date, to_date]);
 
   const trips = reportData?.trips || [];
   const manager = reportData?.manager;
   const user = trips[0]?.user;
+
+  // Group trips by date for display and export
+  const groupedTrips = trips.reduce((acc, trip) => {
+    const dateKey = moment(trip.trips_date).format("DD.MM.YYYY");
+    const fromSite = trip.fromsite?.site_name || "N/A";
+    const toSite = trip.tosite?.site_name || "N/A";
+    const km = parseFloat(trip.trips_km || 0);
+
+    if (!acc[dateKey]) {
+      acc[dateKey] = {
+        ...trip,
+        trips_km: km,
+        description: `${fromSite} TO ${toSite}`,
+        lastToSite: toSite,
+        costCenters: new Set(),
+      };
+    } else {
+      acc[dateKey].trips_km += km;
+      // Chain description if current fromSite matches previous toSite
+      if (fromSite.toUpperCase() === acc[dateKey].lastToSite.toUpperCase()) {
+        acc[dateKey].description += ` TO ${toSite}`;
+      } else {
+        acc[dateKey].description += ` TO ${fromSite} TO ${toSite}`;
+      }
+      acc[dateKey].lastToSite = toSite;
+    }
+
+    // Collect unique cost centers, excluding "OFFICE"
+    if (fromSite.toUpperCase() !== "OFFICE" && fromSite !== "N/A")
+      acc[dateKey].costCenters.add(fromSite.toUpperCase());
+    if (toSite.toUpperCase() !== "OFFICE" && toSite !== "N/A")
+      acc[dateKey].costCenters.add(toSite.toUpperCase());
+
+    return acc;
+  }, {});
+
+  const displayTrips = Object.values(groupedTrips).map((group) => ({
+    ...group,
+    costCenterDisplay: Array.from(group.costCenters).join(" "),
+  }));
 
   const totalKm = trips.reduce(
     (acc, curr) => acc + parseFloat(curr.trips_km || 0),
@@ -87,13 +140,13 @@ const PetrolReimbursementDetail = () => {
         "Total Amount",
         "Cost Center",
       ],
-      ...trips.map((row) => [
+      ...displayTrips.map((row) => [
         moment(row.trips_date).format("DD.MM.YYYY"),
-        `${row.fromsite?.site_name || "N/A"} TO ${row.tosite?.site_name || "N/A"}`,
+        row.description,
         row.trips_km,
         row.trips_price,
         (parseFloat(row.trips_km) * parseFloat(row.trips_price)).toFixed(2),
-        row.fromsite?.site_name || "N/A",
+        row.costCenterDisplay,
       ]),
       ["TOTAL", "", totalKm.toFixed(2), "", totalAmount.toFixed(2), ""],
     ];
@@ -158,7 +211,7 @@ const PetrolReimbursementDetail = () => {
             <Printer className="w-4 h-4" />
             Print PDF
           </Button>
-          <Button
+          {/* <Button
             onClick={handleExportExcel}
             variant="outline"
             className="flex items-center gap-2 border-primary text-primary hover:bg-primary/5 hover:text-primary"
@@ -166,7 +219,7 @@ const PetrolReimbursementDetail = () => {
           >
             <FileSpreadsheet className="w-4 h-4" />
             Export Excel
-          </Button>
+          </Button> */}
         </div>
       </div>
 
@@ -176,8 +229,11 @@ const PetrolReimbursementDetail = () => {
         @media print {
           body * { visibility: hidden; }
           .printable-area, .printable-area * { visibility: visible; }
-          .printable-area { position: absolute; left: 0; top: 0; width: 100%; }
+          .printable-area { position: absolute; left: 0; top: 0; width: 100%; margin: 0 !important; padding: 0 !important; }
           .print\\:hidden { display: none !important; }
+          header, footer, [data-sidebar="sidebar"], [data-sidebar="trigger"], .sidebar-rail { display: none !important; }
+          main { margin: 0 !important; padding: 0 !important; }
+          .printable-area { border: none !important; shadow: none !important; }
         }
         .voucher-table th, .voucher-table td { border: 1px solid #000; padding: 6px 8px; font-size: 12px; }
         .voucher-header { border: 1px solid #000; border-bottom: none; }
@@ -187,13 +243,36 @@ const PetrolReimbursementDetail = () => {
 
       {/* Printable Area */}
       <div className="printable-area bg-white shadow-lg mx-auto max-w-5xl print:shadow-none print:max-w-none">
-        <div className="p-8 print:p-4">
+        <div className="p-8 pb-0 print:p-4 flex justify-between items-start border-primary">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-bold text-primary">
+              {companyDetails?.company_name}
+            </h2>
+            <div className="text-xs text-gray-600 max-w-md leading-relaxed">
+              <p className="whitespace-pre-line">
+                {companyDetails.company_address}
+              </p>
+              <span className="flex gap-3">
+                <p>Mobile No : {companyDetails?.company_mobile_no}</p>
+                <p>Telephone : {companyDetails?.company_landline_no}</p>
+              </span>
+            </div>
+          </div>
+          {logoUrl && (
+            <img
+              src={logoUrl}
+              alt="Company Logo"
+              className="h-16 md:h-20 w-auto object-contain"
+            />
+          )}
+        </div>
+        <div className="p-8 pt-4 print:p-4">
           {/* Main Title */}
           <div className="border border-black p-1 text-center font-bold text-sm bg-gray-50">
             Petrol Reimbursement
           </div>
           <div className="border border-black border-t-0 p-1 text-center font-bold text-xs text-red-600">
-            Period: {moment(from_date).format("DD-MM-YYYY")} to{" "}
+            Period : {moment(from_date).format("DD-MM-YYYY")} to{" "}
             {moment(to_date).format("DD-MM-YYYY")}
           </div>
 
@@ -201,16 +280,16 @@ const PetrolReimbursementDetail = () => {
           <div className="grid grid-cols-12 text-[11px] border border-black border-t-0">
             <div className="col-span-4 border-r border-black p-1.5 flex gap-2">
               <span className="font-bold whitespace-nowrap">
-                Employee Name:
+                Employee Name :
               </span>
               <span className="uppercase truncate">{user?.name || "N/A"}</span>
             </div>
             <div className="col-span-4 border-r border-black p-1.5 flex gap-2">
-              <span className="font-bold">Employee Code:</span>
+              <span className="font-bold">Employee Code :</span>
               <span>{user?.employee_code || "N/A"}</span>
             </div>
             <div className="col-span-4 p-1.5 flex gap-2">
-              <span className="font-bold">Designation:</span>
+              <span className="font-bold">Designation :</span>
               <span className="uppercase truncate">
                 {user?.user_position || "COORDINATOR"}
               </span>
@@ -219,20 +298,20 @@ const PetrolReimbursementDetail = () => {
           <div className="grid grid-cols-12 text-[11px] border border-black border-t-0">
             <div className="col-span-4 border-r border-black p-1.5 flex gap-2">
               <span className="font-bold whitespace-nowrap">
-                Reporting Manager:
+                Reporting Manager :
               </span>
               <span className="uppercase truncate">
                 {manager?.name || "N/A"}
               </span>
             </div>
             <div className="col-span-8 border-r border-black p-1.5 flex gap-4">
-              <span className="font-bold">Month Reading:</span>
+              <span className="font-bold">Month Reading :</span>
               <div className="flex gap-1">
-                <span className="font-bold">Starting KM:</span>
+                <span className="font-bold">Starting KM :</span>
                 <span> {reportData?.open_km || "0"}</span>
               </div>
               <div className="flex gap-1">
-                <span className="font-bold">Closing KM:</span>
+                <span className="font-bold">Closing KM :</span>
                 <span>{reportData?.close_km || "0"}</span>
               </div>
             </div>
@@ -245,7 +324,7 @@ const PetrolReimbursementDetail = () => {
                 <th className="w-24">Date</th>
                 <th>Description of Traveling</th>
                 <th className="w-24">Kilometers Travelled</th>
-                <th className="w-24">Per Kilometer (Rs.4)</th>
+                <th className="w-24">Per Kilometer</th>
                 <th className="w-28">Total Amount</th>
                 <th className="w-32">Cost Center</th>
               </tr>
@@ -257,32 +336,29 @@ const PetrolReimbursementDetail = () => {
                     Loading report data...
                   </td>
                 </tr>
-              ) : trips.length === 0 ? (
+              ) : displayTrips.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="text-center py-10">
                     No data found for this period.
                   </td>
                 </tr>
               ) : (
-                trips.map((row, idx) => (
+                displayTrips.map((row, idx) => (
                   <tr key={row.id || idx} className="text-[11px]">
                     <td className="text-center">
-                      {moment(row.trips_date).format("DD.MM.YYYY")}
+                      {moment(row.trips_date).format("DD-MM-YYYY")}
                     </td>
-                    <td className="uppercase">
-                      {row.fromsite?.site_name || "N/A"} TO{" "}
-                      {row.tosite?.site_name || "N/A"}
-                    </td>
+                    <td className="uppercase">{row.description}</td>
                     <td className="text-center">{row.trips_km}</td>
                     <td className="text-center">{row.trips_price || "4"}</td>
                     <td className="text-center font-medium">
                       {(
                         parseFloat(row.trips_km || 0) *
                         parseFloat(row.trips_price || 4)
-                      ).toFixed(0)}
+                      ).toFixed(2)}
                     </td>
                     <td className="text-center uppercase text-[9px]">
-                      {row.fromsite?.site_name || "N/A"} {row.tosite?.site_name}
+                      {row.costCenterDisplay}
                     </td>
                   </tr>
                 ))
@@ -292,9 +368,9 @@ const PetrolReimbursementDetail = () => {
                 <td colSpan="2" className="text-center">
                   TOTAL
                 </td>
-                <td className="text-center">{totalKm.toFixed(0)}</td>
+                <td className="text-center">{totalKm.toFixed(2)}</td>
                 <td className="text-center"></td>
-                <td className="text-center">{totalAmount.toFixed(0)}</td>
+                <td className="text-center">{totalAmount.toFixed(2)}</td>
                 <td className="text-center">-</td>
               </tr>
             </tbody>

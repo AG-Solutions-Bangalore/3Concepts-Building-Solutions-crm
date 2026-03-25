@@ -1,23 +1,13 @@
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Key, Lock, LogIn, User } from "lucide-react";
+import { Mail, User, Send, ArrowLeft } from "lucide-react";
 import { Button } from "../ui/button";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useApiMutation } from "@/hooks/useApiMutation";
+import { LOGIN } from "@/constants/apiConstants";
 import { useSelector } from "react-redux";
 import { getImageBaseUrl } from "@/utils/imageUtils";
 
-export default function LoginForm({
-  email,
-  setEmail,
-  password,
-  setPassword,
-  showPassword,
-  setShowPassword,
-  emailInputRef,
-  handleSubmit,
-  isLoading,
-  loadingMessage,
-  onSwitchToForgot,
-}) {
+export default function ForgotPasswordForm({ onBackToLogin }) {
   const companyDetails = useSelector((state) => state.company.companyDetails);
   const companyImage = useSelector((state) => state.company.companyImage);
 
@@ -27,9 +17,46 @@ export default function LoginForm({
       ? `${logoBaseUrl}${companyDetails.company_logo}`
       : null;
 
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+  });
+  const { trigger: forgotPassword, loading: isLoading } = useApiMutation();
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!form.username || !form.email) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    try {
+      const res = await forgotPassword({
+        url: LOGIN.forgotpassword,
+        method: "POST",
+        data: form,
+      });
+
+      if (res?.code === 201) {
+        toast.success(res.message || "Reset link sent successfully");
+        setForm({ username: "", email: "" });
+        onBackToLogin();
+      } else {
+        toast.error(res?.message || "Something went wrong");
+      }
+    } catch (error) {
+      toast.error(error?.message || "Something went wrong");
+    }
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }}
+      initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.6, delay: 0.2 }}
       className="h-full lg:col-span-2 p-6 md:p-10 flex flex-col justify-center bg-white to-transparent"
@@ -47,37 +74,35 @@ export default function LoginForm({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
+        transition={{ delay: 0.4 }}
       >
         <h1 className="text-3xl md:text-4xl font-bold text-dark mb-1">
-          Welcome back
+          Forgot Password?
         </h1>
-        <p className="text-dark/20 text-lg mb-6 md:mb-8">
-          Comfort Meets Design
+        <p className="text-dark/20 text-md mb-6 md:mb-8">
+          We'll send a password to your registered email.
         </p>
       </motion.div>
+
       <form onSubmit={handleSubmit}>
         <div className="space-y-3 md:space-y-5">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.5 }}
           >
             <label className="block text-sm font-medium text-dark mb-2">
               Mobile No
             </label>
             <div className="relative group">
               <motion.input
-                ref={emailInputRef}
                 type="tel"
+                name="username"
                 placeholder="Enter your mobile no."
-                value={email}
-                onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, ""); // allow only digits
-                  if (value.length <= 10) setEmail(value);
-                }}
+                value={form.username}
                 minLength={10}
                 maxLength={10}
+                onChange={handleChange}
                 className="no-spinner w-full px-4 py-2.5 pl-11 rounded-xl bg-white/10 border border-dark text-dark placeholder-dark/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all duration-300"
                 whileFocus={{ scale: 1.02 }}
               />
@@ -91,66 +116,56 @@ export default function LoginForm({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
+            transition={{ delay: 0.6 }}
           >
             <label className="block text-sm font-medium text-dark mb-2">
-              Password
+              Email Id
             </label>
             <div className="relative group">
               <motion.input
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="no-spinner w-full px-4 py-2.5 pl-11 rounded-xl bg-white/10 border border-dark text-dark placeholder-dark/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all duration-300"
+                type="email"
+                name="email"
+                placeholder="you@example.com"
+                value={form.email}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 pl-11 rounded-xl bg-white/10 border border-dark text-dark placeholder-dark/50 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all duration-300"
                 whileFocus={{ scale: 1.02 }}
               />
-              <Lock
+              <Mail
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-dark/40 group-focus-within:text-primary transition-colors"
                 size={18}
               />
-              <motion.button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-[12px] text-primary transition-colors p-1"
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </motion.button>
             </div>
           </motion.div>
+
+          <div className="pt-2">
+            <Button className="w-full py-3" type="submit" disabled={isLoading}>
+              {isLoading ? (
+                "Sending..."
+              ) : (
+                <>
+                  <Send size={18} className="mr-2" />
+                  Send reset link
+                </>
+              )}
+            </Button>
+          </div>
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.85 }}
-            className="mt-2 text-right"
+            transition={{ delay: 0.8 }}
+            className="text-center"
           >
             <button
               type="button"
-              onClick={onSwitchToForgot}
-              className="text-sm text-primary/80 hover:text-primary transition-colors font-medium"
+              onClick={onBackToLogin}
+              className="inline-flex items-center text-sm text-primary/80 hover:text-primary transition-colors font-medium"
             >
-              Forgot password?
+              <ArrowLeft size={16} className="mr-2" />
+              Back to Sign In
             </button>
           </motion.div>
-          <Button className="w-full py-3" type="submit" disabled={isLoading}>
-            {isLoading ? (
-              <motion.span
-                key={loadingMessage}
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-              >
-                {loadingMessage}
-              </motion.span>
-            ) : (
-              <>
-                <LogIn size={18} />
-                Sign In
-              </>
-            )}
-          </Button>
         </div>
       </form>
     </motion.div>

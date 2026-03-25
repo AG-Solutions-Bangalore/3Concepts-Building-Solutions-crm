@@ -33,7 +33,7 @@ export default function BrandPanel() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1 }}
-      className="hidden lg:flex lg:col-span-3 flex-col justify-center p-12 relative overflow-hidden text-white"
+      className="hidden lg:flex lg:col-span-3 flex-col justify-center p-8 relative overflow-hidden text-white"
     >
       {/* Background with Overlay */}
       <div
@@ -45,7 +45,7 @@ export default function BrandPanel() {
       <div className="absolute inset-0 bg-gradient-to-br from-slate-950/90 via-slate-900/80 to-transparent z-10" />
 
       {/* Content */}
-      <div className="relative z-20 space-y-8">
+      <div className="relative z-20 space-y-4 md:space-y-6">
         <motion.div
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -54,22 +54,20 @@ export default function BrandPanel() {
           <span className="px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-medium tracking-wider uppercase mb-4 inline-block">
             Established 2020
           </span>
-          <h2 className="text-5xl font-bold leading-tight">
+          <h2 className="text-4xl font-bold leading-tight">
             {companyDetails?.company_name?.split(" ")[0] || "3Concepts"} <br />
             <span className="italic font-light tracking-tighter">
               {companyDetails?.company_name?.split(" ").slice(1).join(" ") ||
                 "Building Solutions"}
             </span>
           </h2>
-          <p className="text-blue-100/70 text-lg mt-4 max-w-md leading-relaxed">
-            {companyDetails?.company_short === "3CBS"
-              ? "Personalized service during every step of the project. We design, install, maintain and service your every operational need."
-              : "Connecting design and comfort for your workspace needs."}
+          <p className="text-blue-100/70 mt-4 max-w-md leading-relaxed text-sm">
+           Personalized service during every step of the project. We design, install, maintain and service your every operational need.
           </p>
         </motion.div>
 
         {/* Highlight Grid */}
-        <div className="grid grid-cols-2 gap-6 mt-12">
+        <div className="grid grid-cols-2 gap-4 mt-8 md:mt-10">
           {highlights.map((item, index) => (
             <motion.div
               key={item.title}
@@ -95,7 +93,7 @@ export default function BrandPanel() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1, duration: 1 }}
-          className="pt-8 border-t border-white/10 mt-12 flex items-center justify-between"
+          className="pt-6 border-t border-white/10 mt-8 md:mt-10 flex items-center justify-between"
         >
           <div className="flex flex-col">
             <span className="text-2xl font-bold text-white">3CBS</span>

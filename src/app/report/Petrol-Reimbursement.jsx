@@ -64,9 +64,13 @@ const TripReport = () => {
       const trips = res?.data?.trips || res?.data?.data?.trips || [];
 
       if (trips.length > 0) {
-        navigate(
-          `/report/petrol_reimbursement/${filters.employee_id}?from_date=${filters.from_date}&to_date=${filters.to_date}`,
-        );
+        navigate(`/report/petrol_reimbursement_view`, {
+          state: {
+            from_date: filters.from_date,
+            to_date: filters.to_date,
+            employee_id: filters.employee_id,
+          },
+        });
       } else {
         toast.error("No data found for the selected criteria");
       }
@@ -87,7 +91,7 @@ const TripReport = () => {
         title="Petrol Reimbursement Report"
         description="Filter and export vehicle trip reports by date and employee"
       />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-end gap-3 bg-white p-3 rounded-lg border shadow-sm">
+      <div className="w-full mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 items-end gap-3 bg-white p-3 rounded-lg border shadow-sm">
         <div className="space-y-1">
           <Label className="text-[10px] uppercase font-bold text-gray-500">
             From Date

@@ -99,11 +99,53 @@ const USER_ROLE_PERMISSIONS = {
   1: {
     navMain: [
       "DASHBOARD",
-      "NOTIFICATION",
       "EMPLOYEE",
       "SITE",
       "KM_READING",
       "TRIP",
+      "NOTIFICATION",
+      "REPORT",
+      "SETTINGS",
+    ],
+
+    navMainReport: ["DASHBOARD", "SETTINGS"],
+  },
+  2: {
+    navMain: [
+      "DASHBOARD",
+      "EMPLOYEE",
+      "SITE",
+      "KM_READING",
+      "TRIP",
+      "NOTIFICATION",
+      "REPORT",
+      "SETTINGS",
+    ],
+
+    navMainReport: ["DASHBOARD", "SETTINGS"],
+  },
+  3: {
+    navMain: [
+      "DASHBOARD",
+      "EMPLOYEE",
+      "SITE",
+      "KM_READING",
+      "TRIP",
+      "NOTIFICATION",
+      "REPORT",
+      "SETTINGS",
+    ],
+
+    navMainReport: ["DASHBOARD", "SETTINGS"],
+  },
+  4: {
+    navMain: [
+      "DASHBOARD",
+      "EMPLOYEE",
+      "SITE",
+      "KM_READING",
+      "TRIP",
+      "NOTIFICATION",
       "REPORT",
       "SETTINGS",
     ],

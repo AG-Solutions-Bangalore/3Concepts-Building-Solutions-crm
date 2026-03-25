@@ -15,7 +15,7 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-const Profile = ({ open, setOpen }) => {
+const Profile = () => {
   const { trigger, loading: loading } = useApiMutation();
 
   const [formData, setFormData] = useState({
@@ -38,8 +38,8 @@ const Profile = ({ open, setOpen }) => {
   }, [profileData]);
 
   useEffect(() => {
-    if (open) refetch();
-  }, [open, refetch]);
+    refetch();
+  }, [refetch]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,7 +63,7 @@ const Profile = ({ open, setOpen }) => {
       });
       if (res?.code === 200) {
         toast.success(res.message || "Profile updated");
-        setOpen(false);
+        // setOpen(false);
       } else {
         toast.error(res.message || "Update failed");
       }
@@ -73,18 +73,20 @@ const Profile = ({ open, setOpen }) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="w-full max-w-sm" aria-describedby={undefined}>
-        <DialogHeader>
-          <DialogTitle>Profile</DialogTitle>
-        </DialogHeader>
+    <div className="w-full">
+      <div className="w-full" aria-describedby={undefined}>
+        <div className="">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            Profile
+          </h2>
+        </div>
 
         {profileLoading ? (
           <div className="flex justify-center py-8">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-4 grid-cols-3">
             <div className="grid gap-1.5">
               <Label>Name</Label>
               <Input value={formData.name} disabled />
@@ -112,8 +114,12 @@ const Profile = ({ open, setOpen }) => {
           </div>
         )}
 
-        <DialogFooter className="pt-4">
-          <Button onClick={handleSubmit} disabled={loading || profileLoading}>
+        <div className="pt-4">
+          <Button
+            className=""
+            onClick={handleSubmit}
+            disabled={loading || profileLoading}
+          >
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -123,9 +129,9 @@ const Profile = ({ open, setOpen }) => {
               "Update Profile"
             )}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </div>
+    </div>
   );
 };
 

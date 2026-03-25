@@ -109,7 +109,7 @@ const EmployeeReport = () => {
       ),
     },
     {
-      header: "Code",
+      header: "Employee Code",
       accessorKey: "employee_code",
       cell: ({ row }) => (
         <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs font-mono">
@@ -118,10 +118,10 @@ const EmployeeReport = () => {
       ),
     },
     {
-      header: "Position",
+      header: "Designation",
       accessorKey: "user_position",
       cell: ({ row }) => (
-        <span className="text-gray-600">{row.original.user_position || "N/A"}</span>
+        <span className="text-gray-600">{row.original.user_position || "-"}</span>
       ),
     },
     {
