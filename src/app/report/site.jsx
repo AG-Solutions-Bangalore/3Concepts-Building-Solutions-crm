@@ -95,6 +95,15 @@ const SiteReport = () => {
       ),
     },
     {
+      header: "Address",
+      accessorKey: "site_address",
+      cell: ({ row }) => (
+        <div className="max-w-xs truncate text-gray-500">
+          {row.original.site_address || "N/A"}
+        </div>
+      ),
+    },
+    {
       header: "Location",
       accessorKey: "site_url",
       cell: ({ row }) => (
@@ -107,15 +116,6 @@ const SiteReport = () => {
             {row.original.site_url || "N/A"}
           </a>
         </span>
-      ),
-    },
-    {
-      header: "Address",
-      accessorKey: "site_address",
-      cell: ({ row }) => (
-        <div className="max-w-xs truncate text-gray-500">
-          {row.original.site_address || "N/A"}
-        </div>
       ),
     },
     {

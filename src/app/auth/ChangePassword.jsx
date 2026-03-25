@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CHANGE_PASSWORD_API } from "@/constants/apiConstants";
 
-const ChangePassword = ({ open, setOpen }) => {
+const ChangePassword = () => {
   const { trigger, loading: isLoading } = useApiMutation();
 
   const user = useSelector((state) => state.auth.user);
@@ -52,8 +52,6 @@ const ChangePassword = ({ open, setOpen }) => {
       return;
     }
 
-
-
     try {
       const res = await trigger({
         url: CHANGE_PASSWORD_API.create,
@@ -72,7 +70,6 @@ const ChangePassword = ({ open, setOpen }) => {
           oldPassword: "",
           newPassword: "",
         }));
-        setOpen(false);
       } else {
         toast.error(res?.message || "Failed to update password");
       }
@@ -82,56 +79,52 @@ const ChangePassword = ({ open, setOpen }) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="w-full max-w-sm" aria-describedby={undefined}>
-        <DialogHeader>
-          <DialogTitle>Change Password</DialogTitle>
-        </DialogHeader>
+    <div className="w-full dark:border-gray-800">
+      <div className="">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
+          Change Password
+        </h2>
+      </div>
 
-        <div className="space-y-4">
-          <div className="space-y-1">
-            <Label htmlFor="oldPassword">Current Password</Label>
-            <Input
-              id="oldPassword"
-              name="oldPassword"
-              type="password"
-              placeholder="Enter current password"
-              value={formData.oldPassword}
-              onChange={handleInputChange}
-            />
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="newPassword">New Password</Label>
-            <Input
-              id="newPassword"
-              name="newPassword"
-              type="password"
-              placeholder="Enter new password"
-              value={formData.newPassword}
-              onChange={handleInputChange}
-            />
-          </div>
+      <div className="grid grid-cols-2 gap-5">
+        <div className="space-y-1">
+          <Label htmlFor="oldPassword">Current Password</Label>
+          <Input
+            id="oldPassword"
+            name="oldPassword"
+            type="password"
+            placeholder="Enter current password"
+            value={formData.oldPassword}
+            onChange={handleInputChange}
+          />
         </div>
 
-        <DialogFooter>
-          <Button
-            onClick={handleSubmit}
-            disabled={isLoading}
-            className="w-full"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Updating...
-              </>
-            ) : (
-              "Change Password"
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <div className="space-y-1">
+          <Label htmlFor="newPassword">New Password</Label>
+          <Input
+            id="newPassword"
+            name="newPassword"
+            type="password"
+            placeholder="Enter new password"
+            value={formData.newPassword}
+            onChange={handleInputChange}
+          />
+        </div>
+      </div>
+
+      <div className="pt-6">
+        <Button onClick={handleSubmit} disabled={isLoading} className="">
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Updating...
+            </>
+          ) : (
+            "Change Password"
+          )}
+        </Button>
+      </div>
+    </div>
   );
 };
 

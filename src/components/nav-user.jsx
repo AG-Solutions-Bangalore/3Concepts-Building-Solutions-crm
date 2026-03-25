@@ -94,7 +94,7 @@ export function NavUser({ user }) {
                 <div className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground px-4 py-2 w-full  h-10 ">
                   <div className="flex justify-between items-center h-full w-full text-xs leading-tight text-center">
                     <span className="flex items-center gap-1 font-semibold">
-                      Updated on :18/03/2026
+                      Updated on : 25-03-2026
                     </span>
                   </div>
                 </div>
@@ -123,17 +123,6 @@ export function NavUser({ user }) {
                 </DropdownMenuLabel>
 
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setOpenProfile(true)}>
-                  <User />
-
-                  <span className=" cursor-pointer">Profile</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setOpen(true)}>
-                  <Key />
-
-                  <span className=" cursor-pointer">Change Password</span>
-                </DropdownMenuItem>
-
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut />
 
@@ -144,8 +133,6 @@ export function NavUser({ user }) {
           )}
         </SidebarMenuItem>
       </SidebarMenu>
-      <ChangePassword setOpen={setOpen} open={open} />
-      <Profile setOpen={setOpenProfile} open={openprofile} />
     </>
   );
 }

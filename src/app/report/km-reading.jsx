@@ -113,10 +113,10 @@ const KMReadingReport = () => {
   const columns = [
     {
       header: "Date",
-      accessorKey: "km_date",
+      accessorKey: "km_readings_date",
       cell: ({ row }) => (
         <div className="font-medium text-gray-900">
-          {moment(row.original.km_date).format("DD-MM-YYYY")}
+          {moment(row.original.km_readings_date).format("DD-MM-YYYY")}
         </div>
       ),
     },

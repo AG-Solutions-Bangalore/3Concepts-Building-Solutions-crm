@@ -9,8 +9,10 @@ import { toast } from "sonner";
 import BackgroundSVG from "./background-svg";
 import LoginForm from "./login-form";
 import BrandPanel from "./brand-panel";
+import ForgotPasswordForm from "./forgot-password-form";
 
 export default function AuthUI() {
+  const [view, setView] = useState("login"); // "login" | "forgot"
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -29,8 +31,6 @@ export default function AuthUI() {
   useEffect(() => {
     emailInputRef.current?.focus();
   }, []);
-
-
 
   useEffect(() => {
     if (!isLoading) return;
@@ -87,28 +87,33 @@ export default function AuthUI() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900 flex items-center justify-center p-4 overflow-hidden relative">
+    <div className="h-full bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900 flex items-center justify-center overflow-hidden relative">
       <BackgroundSVG />
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative z-10 max-w-6xl w-full"
+        className="relative h-fit max-h-[90dvh] z-10 max-w-6xl w-full"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 rounded-3xl overflow-hidden backdrop-blur-xl bg-white/10 border border-white shadow-2xl">
+        <div className="h-full min-h-0 grid grid-cols-1 lg:grid-cols-5 gap-0 rounded-3xl overflow-hidden backdrop-blur-xl bg-white/10 border border-white shadow-2xl">
           <BrandPanel />
-          <LoginForm
-            email={email}
-            setEmail={setEmail}
-            password={password}
-            setPassword={setPassword}
-            showPassword={showPassword}
-            setShowPassword={setShowPassword}
-            emailInputRef={emailInputRef}
-            handleSubmit={handleSubmit}
-            isLoading={isLoading}
-            loadingMessage={loadingMessage}
-          />
+          {view === "login" ? (
+            <LoginForm
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPassword={setPassword}
+              showPassword={showPassword}
+              setShowPassword={setShowPassword}
+              emailInputRef={emailInputRef}
+              handleSubmit={handleSubmit}
+              isLoading={isLoading}
+              loadingMessage={loadingMessage}
+              onSwitchToForgot={() => setView("forgot")}
+            />
+          ) : (
+            <ForgotPasswordForm onBackToLogin={() => setView("login")} />
+          )}
         </div>
       </motion.div>
     </div>
